@@ -6,7 +6,7 @@ from typing import Any, Dict, List
 
 from openai import OpenAI
 
-from .config import SurveyConfig
+from config import SurveyConfig
 
 
 class AIService:

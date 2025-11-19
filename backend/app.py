@@ -8,9 +8,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, model_validator
 
-from .ai_service import AIService
-from .config import SurveyConfig, load_config
-from .session_manager import SessionManager, SessionNotFoundError
+from ai_service import AIService
+from config import SurveyConfig, load_config
+from session_manager import SessionManager, SessionNotFoundError
 
 
 class Progress(BaseModel):
@@ -87,7 +87,7 @@ ai_service = AIService(survey_config)
 
 def get_config() -> SurveyConfig:
     """Get current config, reloading from file if needed."""
-    from .config import reload_config
+    from config import reload_config
     return reload_config()
 
 
