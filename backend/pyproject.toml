@@ -1,0 +1,22 @@
+[project]
+name = "dynamic-discovery-backend"
+version = "0.1.0"
+description = "AI-driven discovery chatbot backend"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi==0.115.0",
+    "uvicorn[standard]==0.32.0",
+    "openai==1.54.0",
+    "python-dotenv==1.0.1",
+    "pydantic==2.9.2",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest==7.4.0",
+    "pytest-asyncio==0.23.7",
+    "httpx==0.27.2",
+]
+
+[tool.uv]
+dev-dependencies = ["pytest", "pytest-asyncio", "httpx"]

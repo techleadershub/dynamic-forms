@@ -1,0 +1,9 @@
+{
+  "purpose": "To gather high-level, unstructured information about an AI agent that the respondent wants to build, and convert it into structured inputs suitable for an automated Agentic AI design pipeline. The purpose of this form is to collect high-level, informal, and unstructured input about an AI agent idea from developers, business analysts, or technical architects who may not know how to express requirements in a structured way. The form simplifies the process of describing an AI agent by asking a small number of intuitive questions. The responses will serve as raw input for an automated, multi-step Agentic AI Design pipeline that will generate a complete agent architecture (patterns, tools, sub-agents, memory, orchestration, interfaces, and deployment model).",
+  "context": "The respondent may only have a vague or incomplete idea of the AI agent they need. They are not expected to understand agentic design patterns, tools, memory systems, orchestration models, or deployment details. The survey must guide them with simple, intuitive, conversational questions and progressively collect enough context so that downstream prompts can transform their answers into a complete Agentic AI Architecture Specification.",
+  "min_questions": 5,
+  "max_questions": 15,
+  "ai_model": "gpt-4o-mini",
+  "temperature": 0.7
+}
+
