@@ -8,13 +8,13 @@ export default function Home() {
       <div className="mx-auto max-w-4xl space-y-8">
         <header className="space-y-3">
           <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">
-            Discovery Chatbot
+            SmartForms
           </p>
           <h1 className="text-4xl font-semibold text-gray-900">
-            Guided conversations that adapt to every response.
+            Intelligent Forms That Adapt in Real-Time
           </h1>
           <p className="text-sm text-gray-500">
-            Powered by GPT-4o-mini and your survey purpose. Short, sharp, and contextual.
+            Powered by AI to make every question count. Adapts in real-time, asks smart follow-ups, and uncovers insights static forms miss.
           </p>
         </header>
         <ChatInterface />

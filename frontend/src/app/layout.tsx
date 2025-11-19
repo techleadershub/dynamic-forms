@@ -14,8 +14,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Dynamic Discovery Chatbot",
-  description: "Adaptive survey assistant powered by GPT-4o-mini.",
+  title: "SmartForms - Intelligent Adaptive Forms",
+  description: "Powered by AI to make every question count. Adapts in real-time, asks smart follow-ups, and uncovers insights static forms miss.",
 };
 
 export default function RootLayout({

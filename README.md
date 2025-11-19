@@ -1,6 +1,12 @@
-# Dynamic Discovery Chatbot
+# SmartForms
 
-AI-assisted survey chatbot that adapts each question based on the stated survey purpose and prior answers. Backend is powered by FastAPI and OpenAI (GPT-4o-mini). Frontend is a Next.js chat UI plus an admin view to review captured sessions.
+**Intelligent Forms That Adapt in Real-Time**
+
+SmartForms is an intelligent discovery platform that creates dynamic, adaptive forms. Unlike static forms, it asks intelligent follow-up questions, adapts to responses in real-time, and discovers insights through contextual conversations.
+
+**Powered by AI to make every question count. Adapts in real-time, asks smart follow-ups, and uncovers insights static forms miss.**
+
+Backend is powered by FastAPI and OpenAI (GPT-4o-mini). Frontend is a Next.js chat UI with an admin view to review captured sessions.
 
 ## Project Layout
 

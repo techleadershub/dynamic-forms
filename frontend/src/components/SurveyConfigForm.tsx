@@ -23,7 +23,7 @@ export function SurveyConfigForm({ onSubmit, isSubmitting = false }: SurveyConfi
   const [purpose, setPurpose] = useState(DEFAULT_PURPOSE);
   const [context, setContext] = useState(DEFAULT_CONTEXT);
   const [minQuestions, setMinQuestions] = useState(5);
-  const [maxQuestions, setMaxQuestions] = useState(15);
+  const [maxQuestions, setMaxQuestions] = useState(8);
   const [errors, setErrors] = useState<Partial<Record<keyof SurveyConfigInputs, string>>>({});
 
   const validate = (): boolean => {
