@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { startSurvey, submitAnswer } from "@/lib/api";
-import type { Message, QuestionPayload } from "@/lib/types";
+import { useMemo, useState, useEffect } from "react";
+import { startSurvey, submitAnswer, fetchSessionDetail } from "@/lib/api";
+import type { Message, QuestionPayload, SessionDetail } from "@/lib/types";
 import { MessageBubble } from "./MessageBubble";
 import { ProgressBar } from "./ProgressBar";
 import { QuestionForm } from "./QuestionForm";
@@ -27,6 +27,8 @@ export function ChatInterface() {
   const [error, setError] = useState<string | null>(null);
   const [configSubmitted, setConfigSubmitted] = useState(false);
   const [isSubmittingConfig, setIsSubmittingConfig] = useState(false);
+  const [sessionDetail, setSessionDetail] = useState<SessionDetail | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleConfigSubmit = async (config: SurveyConfigInputs) => {
     // Prevent multiple submissions
@@ -91,6 +93,15 @@ export function ChatInterface() {
             },
           ]);
         }
+        // Fetch full session detail when complete
+        if (sessionId) {
+          try {
+            const detail = await fetchSessionDetail(sessionId);
+            setSessionDetail(detail);
+          } catch (err) {
+            console.error("Failed to fetch session detail:", err);
+          }
+        }
         return;
       }
 
@@ -113,6 +124,49 @@ export function ChatInterface() {
   };
 
   const isComplete = useMemo(() => currentQuestion?.is_complete ?? false, [currentQuestion]);
+
+  const handleDownloadJSON = () => {
+    if (!sessionDetail || isDownloading) return;
+
+    setIsDownloading(true);
+    try {
+      // Format the session data as JSON
+      const jsonData = {
+        session_id: sessionDetail.session_id,
+        started_at: sessionDetail.started_at,
+        completed_at: sessionDetail.completed_at,
+        questions_asked: sessionDetail.questions_asked,
+        conversation: sessionDetail.conversation,
+      };
+
+      // Create a blob and download
+      const jsonString = JSON.stringify(jsonData, null, 2);
+      const blob = new Blob([jsonString], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `survey-session-${sessionDetail.session_id}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to download JSON.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  // Fetch session detail when survey completes if not already fetched
+  useEffect(() => {
+    if (isComplete && sessionId && !sessionDetail) {
+      fetchSessionDetail(sessionId)
+        .then(setSessionDetail)
+        .catch((err) => {
+          console.error("Failed to fetch session detail:", err);
+        });
+    }
+  }, [isComplete, sessionId, sessionDetail]);
 
   if (!configSubmitted) {
     return (
@@ -151,8 +205,61 @@ export function ChatInterface() {
       )}
 
       {isComplete ? (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-center text-sm text-emerald-800">
-          Thanks for sharing! Your responses have been recorded.
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 space-y-3">
+          <p className="text-center text-sm text-emerald-800">
+            Thanks for sharing! Your responses have been recorded.
+          </p>
+          {sessionDetail && (
+            <button
+              onClick={handleDownloadJSON}
+              disabled={isDownloading}
+              className="w-full rounded-xl bg-emerald-600 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isDownloading ? (
+                <>
+                  <svg
+                    className="animate-spin h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Preparing download...
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  Download JSON
+                </>
+              )}
+            </button>
+          )}
         </div>
       ) : (
         <QuestionForm question={currentQuestion} isSubmitting={isLoading} onSubmit={handleAnswer} />
