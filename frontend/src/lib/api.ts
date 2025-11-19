@@ -1,4 +1,5 @@
 import type { AnswerRequest, QuestionPayload, SessionDetail, SessionSummary } from "./types";
+import type { SurveyConfigInputs } from "@/components/SurveyConfigForm";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
@@ -11,9 +12,11 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export async function startSurvey(): Promise<QuestionPayload> {
+export async function startSurvey(config: SurveyConfigInputs): Promise<QuestionPayload> {
   const res = await fetch(`${API_BASE}/api/start`, {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(config),
   });
   return handleResponse<QuestionPayload>(res);
 }

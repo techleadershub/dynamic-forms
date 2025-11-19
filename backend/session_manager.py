@@ -1,12 +1,25 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-SESSIONS_DIR = Path(__file__).resolve().parent.parent / "data" / "sessions"
-SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
+# Try multiple paths for data/sessions (supports Railway deployment)
+def _find_sessions_dir() -> Path:
+    # 1. Check environment variable
+    if env_path := os.getenv("SESSIONS_DIR"):
+        path = Path(env_path)
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+    
+    # 2. Check parent directory (repo root when running from backend/)
+    parent_path = Path(__file__).resolve().parent.parent / "data" / "sessions"
+    parent_path.mkdir(parents=True, exist_ok=True)
+    return parent_path
+
+SESSIONS_DIR = _find_sessions_dir()
 
 
 class SessionNotFoundError(Exception):

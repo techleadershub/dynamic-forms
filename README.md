@@ -75,3 +75,18 @@ Each run walks through the chat flow (radio → checkbox → free text), verifie
 
 Each survey session is stored as `data/sessions/{session_id}.json`. This acts as both the short-term chat memory and the audit log for admins.
 
+## Deployment to Railway
+
+This project is configured for deployment on [Railway](https://railway.app). See [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md) for detailed deployment instructions.
+
+**Quick Start:**
+1. Deploy backend service from `backend/` directory
+2. Deploy frontend service from `frontend/` directory
+3. Set environment variables (see deployment guide)
+4. Connect frontend to backend URL
+
+The project includes:
+- `backend/Procfile` and `backend/railway.json` for backend deployment
+- `frontend/railway.json` for frontend deployment
+- Automatic PORT detection (Railway sets `$PORT`)
+

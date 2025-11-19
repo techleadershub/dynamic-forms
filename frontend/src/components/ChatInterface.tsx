@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { startSurvey, submitAnswer } from "@/lib/api";
 import type { Message, QuestionPayload } from "@/lib/types";
 import { MessageBubble } from "./MessageBubble";
 import { ProgressBar } from "./ProgressBar";
 import { QuestionForm } from "./QuestionForm";
+import { SurveyConfigForm, type SurveyConfigInputs } from "./SurveyConfigForm";
 
 const formatAnswer = (answer: string | string[]): string =>
   Array.isArray(answer) ? answer.join(", ") : answer;
@@ -24,33 +25,32 @@ export function ChatInterface() {
   const [progress, setProgress] = useState<QuestionPayload["progress"] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [configSubmitted, setConfigSubmitted] = useState(false);
 
-  useEffect(() => {
-    const bootstrap = async () => {
-      setIsLoading(true);
-      try {
-        const response = await startSurvey();
-        setSessionId(response.session_id);
-        setCurrentQuestion(response);
-        setProgress(response.progress);
-        if (response.question) {
-          setMessages([
-            {
-              id: makeId(),
-              role: "bot",
-              content: response.question,
-            },
-          ]);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to start survey.");
-      } finally {
-        setIsLoading(false);
+  const handleConfigSubmit = async (config: SurveyConfigInputs) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await startSurvey(config);
+      setSessionId(response.session_id);
+      setCurrentQuestion(response);
+      setProgress(response.progress);
+      setConfigSubmitted(true);
+      if (response.question) {
+        setMessages([
+          {
+            id: makeId(),
+            role: "bot",
+            content: response.question,
+          },
+        ]);
       }
-    };
-
-    void bootstrap();
-  }, []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to start survey.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleAnswer = async (answer: string | string[]) => {
     if (!sessionId || !currentQuestion) return;
@@ -105,6 +105,23 @@ export function ChatInterface() {
   };
 
   const isComplete = useMemo(() => currentQuestion?.is_complete ?? false, [currentQuestion]);
+
+  if (!configSubmitted) {
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-4 text-sm text-indigo-800">
+          <p className="font-medium mb-1">Configure your survey</p>
+          <p className="text-indigo-700">Please provide the following information to start the survey.</p>
+        </div>
+        {error && (
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+        <SurveyConfigForm onSubmit={handleConfigSubmit} isSubmitting={isLoading} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">

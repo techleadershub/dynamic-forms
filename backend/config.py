@@ -1,13 +1,35 @@
 from __future__ import annotations
 
 import json
+import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict
 
 from pydantic import BaseModel, Field
 
-CONFIG_PATH = Path(__file__).resolve().parent.parent / "config.json"
+# Try multiple paths for config.json (supports Railway deployment)
+def _find_config_path() -> Path:
+    # 1. Check environment variable
+    if env_path := os.getenv("CONFIG_PATH"):
+        path = Path(env_path)
+        if path.exists():
+            return path
+    
+    # 2. Check parent directory (repo root when running from backend/)
+    parent_path = Path(__file__).resolve().parent.parent / "config.json"
+    if parent_path.exists():
+        return parent_path
+    
+    # 3. Check current directory (fallback)
+    current_path = Path(__file__).resolve().parent / "config.json"
+    if current_path.exists():
+        return current_path
+    
+    # Return the expected path for error message
+    return parent_path
+
+CONFIG_PATH = _find_config_path()
 
 
 class SurveyConfig(BaseModel):

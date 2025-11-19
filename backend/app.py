@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Union
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from .ai_service import AIService
 from .config import SurveyConfig, load_config
@@ -31,6 +31,19 @@ class QuestionResponse(BaseModel):
 
 class StartResponse(QuestionResponse):
     pass
+
+
+class StartRequest(BaseModel):
+    purpose: str = Field(..., description="Purpose of the survey")
+    context: str = Field(..., description="Context about the survey and respondents")
+    min_questions: int = Field(..., ge=1, description="Minimum number of questions")
+    max_questions: int = Field(..., gt=1, description="Maximum number of questions")
+
+    @model_validator(mode="after")
+    def validate_max_greater_than_min(self) -> "StartRequest":
+        if self.max_questions <= self.min_questions:
+            raise ValueError("max_questions must be greater than min_questions")
+        return self
 
 
 class AnswerRequest(BaseModel):
@@ -89,12 +102,13 @@ async def healthcheck() -> Dict[str, str]:
 
 
 def _build_progress(session: Dict[str, Any]) -> Progress:
-    current_config = get_config()
+    # Use config from session instead of reloading from file
+    session_config = session.get("config", {})
     current = session.get("questions_asked", len(session["conversation"]))
     return Progress(
         current=current,
-        min=current_config.min_questions,
-        max=current_config.max_questions,
+        min=session_config.get("min_questions", 5),
+        max=session_config.get("max_questions", 15),
     )
 
 
@@ -115,12 +129,26 @@ def _completion_payload(session_id: str, session: Dict[str, Any], reason: str) -
 
 
 @app.post("/api/start", response_model=StartResponse)
-async def start_survey() -> StartResponse:
-    current_config = get_config()
+async def start_survey(request: StartRequest) -> StartResponse:
+    # Load base config to get ai_model and temperature
+    base_config = get_config()
+    
+    # Create merged config with user inputs and base config values
+    merged_config = SurveyConfig(
+        purpose=request.purpose,
+        context=request.context,
+        min_questions=request.min_questions,
+        max_questions=request.max_questions,
+        ai_model=base_config.ai_model,
+        temperature=base_config.temperature,
+        openai_api_key=base_config.openai_api_key,
+    )
+    
     session_id = str(uuid.uuid4())
-    session = session_manager.create_session(session_id, current_config.model_dump())
+    session = session_manager.create_session(session_id, merged_config.model_dump())
 
-    current_ai_service = get_ai_service()
+    # Create AI service with the merged config
+    current_ai_service = AIService(merged_config)
     question = current_ai_service.generate_question(conversation=[], questions_asked=0)
     session["current_question"] = question
     session["questions_asked"] = 1
@@ -162,21 +190,22 @@ async def submit_answer(payload: AnswerRequest) -> QuestionResponse:
     session["current_question"] = None
     session["questions_asked"] = len(session["conversation"])
 
-    # Reload config to get latest settings
-    current_config = get_config()
+    # Use config from session
+    session_config_dict = session.get("config", {})
+    session_config = SurveyConfig(**session_config_dict)
     
     # Check max question limit
-    if len(session["conversation"]) >= current_config.max_questions:
+    if len(session["conversation"]) >= session_config.max_questions:
         return _completion_payload(payload.session_id, session, "Reached maximum number of questions.")
 
-    # Ask AI for next question with fresh config
-    current_ai_service = get_ai_service()
+    # Ask AI for next question with session config
+    current_ai_service = AIService(session_config)
     next_question = current_ai_service.generate_question(
         conversation=session["conversation"],
         questions_asked=len(session["conversation"]),
     )
 
-    if next_question.get("is_complete") and len(session["conversation"]) >= current_config.min_questions:
+    if next_question.get("is_complete") and len(session["conversation"]) >= session_config.min_questions:
         return _completion_payload(payload.session_id, session, "AI determined the discovery is complete.")
 
     session["current_question"] = next_question
