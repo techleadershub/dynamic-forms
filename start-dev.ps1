@@ -64,15 +64,19 @@ Write-Host ""
 
 # Start backend in a new window
 Write-Host "Starting Backend (http://localhost:8000)..." -ForegroundColor Green
+$backendPython = Join-Path $backendPath ".venv\Scripts\python.exe"
+if (-not (Test-Path $backendPython)) {
+    $backendPython = Join-Path $backendPath ".venv\bin\python.exe"
+}
 $backendScript = @"
-Set-Location '$backendPath'
+Set-Location '$scriptPath'
 Write-Host '========================================' -ForegroundColor Cyan
 Write-Host 'Backend Server (FastAPI)' -ForegroundColor Cyan
 Write-Host '========================================' -ForegroundColor Cyan
 Write-Host 'Starting on http://localhost:8000' -ForegroundColor Yellow
 Write-Host 'Press Ctrl+C to stop' -ForegroundColor Gray
 Write-Host ''
-uv run uvicorn backend.app:app --reload --host 0.0.0.0 --port 8000
+& '$backendPython' -m uvicorn backend.app:app --reload --host 0.0.0.0 --port 8000
 "@
 
 Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendScript

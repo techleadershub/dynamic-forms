@@ -14,9 +14,14 @@ interface SurveyConfigFormProps {
   isSubmitting?: boolean;
 }
 
+// Default values from config.json for AI agent design use case
+const DEFAULT_PURPOSE = "Extract essential information from developers, product managers, or technical stakeholders to design a complete AI agent architecture. The goal is to gather raw, unstructured input through 7-10 precise questions that capture: (1) the problem being solved, (2) target users/personas, (3) agent tasks and capabilities, (4) expected outputs/deliverables, (5) interactivity and autonomy level, (6) required inputs/data sources/tools, and (7) constraints, risks, and safety requirements. These answers will be automatically interpreted and transformed into a complete agent blueprint including patterns, sub-agents, tool design, memory architecture, orchestration, interfaces, and deployment strategy.";
+
+const DEFAULT_CONTEXT = "Respondents will give messy, vague, or incomplete answers—this is expected and desirable. They don't need to understand agentic design patterns, tool schemas, memory systems, or orchestration models. Ask simple, conversational questions one at a time. Provide concrete examples in your questions to guide them (e.g., 'Examples: Help users reset passwords, Automate lead qualification, Fix bugs'). Focus on extracting actionable intelligence: what problem they're solving, who it's for, what the agent should do, what it should produce, how autonomous it should be, what data/tools it needs, and what it must avoid. Each answer should be recorded verbatim—the interpretation layer will structure it later. Keep questions short, intuitive, and focused on one concept at a time.";
+
 export function SurveyConfigForm({ onSubmit, isSubmitting = false }: SurveyConfigFormProps) {
-  const [purpose, setPurpose] = useState("");
-  const [context, setContext] = useState("");
+  const [purpose, setPurpose] = useState(DEFAULT_PURPOSE);
+  const [context, setContext] = useState(DEFAULT_CONTEXT);
   const [minQuestions, setMinQuestions] = useState(5);
   const [maxQuestions, setMaxQuestions] = useState(15);
   const [errors, setErrors] = useState<Partial<Record<keyof SurveyConfigInputs, string>>>({});
