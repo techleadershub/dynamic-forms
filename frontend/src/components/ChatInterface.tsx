@@ -26,8 +26,15 @@ export function ChatInterface() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [configSubmitted, setConfigSubmitted] = useState(false);
+  const [isSubmittingConfig, setIsSubmittingConfig] = useState(false);
 
   const handleConfigSubmit = async (config: SurveyConfigInputs) => {
+    // Prevent multiple submissions
+    if (isSubmittingConfig || configSubmitted) {
+      return;
+    }
+    
+    setIsSubmittingConfig(true);
     setIsLoading(true);
     setError(null);
     try {
@@ -47,6 +54,7 @@ export function ChatInterface() {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to start survey.");
+      setIsSubmittingConfig(false); // Reset on error so user can retry
     } finally {
       setIsLoading(false);
     }
@@ -118,7 +126,7 @@ export function ChatInterface() {
             {error}
           </div>
         )}
-        <SurveyConfigForm onSubmit={handleConfigSubmit} isSubmitting={isLoading} />
+        <SurveyConfigForm onSubmit={handleConfigSubmit} isSubmitting={isLoading || isSubmittingConfig} />
       </div>
     );
   }

@@ -77,7 +77,11 @@ Each survey session is stored as `data/sessions/{session_id}.json`. This acts as
 
 ## Deployment to Railway
 
-This project is configured for deployment on [Railway](https://railway.app). See [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md) for detailed deployment instructions.
+This project is configured for deployment on [Railway](https://railway.app). 
+
+**📖 For detailed step-by-step instructions, see [RAILWAY_DEPLOYMENT_STEPS.md](./RAILWAY_DEPLOYMENT_STEPS.md)**
+
+For technical reference, see [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md).
 
 **Quick Start:**
 1. Deploy backend service from `backend/` directory
