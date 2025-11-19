@@ -18,7 +18,12 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build Next.js app
+# Accept build arguments from Railway
+ARG NEXT_PUBLIC_API_BASE_URL
+# Make it available as environment variable during build
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+
+# Build Next.js app (env var is now available)
 RUN npm run build
 
 # Production image, copy all the files and run next
